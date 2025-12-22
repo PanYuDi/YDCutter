@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class ToolBarViewController: UIViewController {
+class ToolBarViewController: BaseCutViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()

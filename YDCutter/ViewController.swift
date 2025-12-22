@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Photos
 
 class ViewController: UIViewController {
 
@@ -14,6 +15,27 @@ class ViewController: UIViewController {
     private let videoControlVC = VideoControlViewController()
     private let timelineVC = TimelineViewController()
     private let toolbarVC = ToolBarViewController()
+    private lazy var importBtn: UIButton = {
+        let btn = UIButton(type: .system)
+        btn.setTitle("Import", for: .normal)
+        btn.setTitleColor(.white, for: .normal)
+        btn.backgroundColor = .red
+        btn.layer.cornerRadius = 8
+        btn.contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+        btn.addTarget(self, action: #selector(importSegment), for: .touchUpInside)
+        return btn
+    }()
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        let context = BaseCutContext()
+        let initialVCs:[BaseCutViewController] = [previewVC, videoControlVC, timelineVC, toolbarVC]
+        for vc in initialVCs {
+            vc.context = context
+        }
+        registerDI()
+        
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -65,6 +87,67 @@ class ViewController: UIViewController {
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
             make.height.equalTo(60)
         }
+        
+        // Add Import Button
+        view.addSubview(importBtn)
+        importBtn.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+            make.trailing.equalTo(view.safeAreaLayoutGuide.snp.trailing).offset(-10)
+        }
+    }
+    @objc func importSegment() {
+        Task {
+            await checkAndRequestPermission()
+        }
+        
+    }
+    private func checkAndRequestPermission() async {
+        let status = PHPhotoLibrary.authorizationStatus()
+        if status != .authorized {
+            await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+            showVideoPicker()
+        } else {
+            showVideoPicker()
+        }
+    }
+    @objc
+    private func showVideoPicker() {
+       // 先判断相册是否可用
+       guard UIImagePickerController.isSourceTypeAvailable(.photoLibrary) else {
+           print("相册不可用")
+           return
+       }
+       
+       let picker = UIImagePickerController()
+       picker.delegate = self
+       // 设置来源为相册
+       picker.sourceType = .photoLibrary
+       // 过滤仅显示视频（kUTTypeMovie对应视频类型）
+       picker.mediaTypes = [UTType.movie.identifier]
+       // 弹出选择器
+       present(picker, animated: true)
+    }
+    private func registerDI() {
+        
+    }
+    
+}
+
+extension ViewController : UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            // 获取视频临时URL（系统会把选中视频复制到App的tmp目录）
+        guard let videoURL = info[.mediaURL] as? URL else {
+            print("获取视频失败")
+            picker.dismiss(animated: true)
+            return
+        }
+        picker.dismiss(animated: true)
+    }
+}
+
+extension ViewController {
+    func importAssets(url:URL) {
+        
     }
 }
 

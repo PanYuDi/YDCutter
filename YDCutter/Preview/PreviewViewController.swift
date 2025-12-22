@@ -7,13 +7,24 @@
 
 import UIKit
 import SnapKit
+import AVFoundation
 
-class PreviewViewController: UIViewController {
+public protocol PreviewViewControllerProtocol {
+    func setupPlayer(url: URL)
+}
 
+class PreviewViewController: BaseCutViewController {
+    var player: AVPlayer? = nil
+    var previewLayer: AVPlayerLayer? = nil
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
-        
+        setupUI()
+
+    }
+    
+    func setupUI() {
         // Add a label for identification
         let label = UILabel()
         label.text = "Preview Area"
@@ -24,16 +35,17 @@ class PreviewViewController: UIViewController {
             make.center.equalToSuperview()
         }
     }
-    
+}
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+extension PreviewViewController: PreviewViewControllerProtocol {
+    func setupPlayer(url: URL) {
+        previewLayer?.removeFromSuperlayer()
+        player = AVPlayer(url: url)
+        previewLayer = AVPlayerLayer(player: player)
+        previewLayer?.videoGravity = .resizeAspect
+        if let previewLayer {
+            view.layer.addSublayer(previewLayer)
+            
+        }
     }
-    */
-
 }
