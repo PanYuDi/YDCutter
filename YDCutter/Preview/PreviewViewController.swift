@@ -8,19 +8,22 @@
 import UIKit
 import SnapKit
 import AVFoundation
+import Combine
 
 public protocol PreviewViewControllerProtocol {
     func setupPlayer(url: URL)
 }
 
-class PreviewViewController: BaseCutViewController {
+class PreviewViewController: BaseCutViewController<BaseCutViewModel> {
     var player: AVPlayer? = nil
     var previewLayer: AVPlayerLayer? = nil
+    var cancellable: Set<AnyCancellable> = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
         setupUI()
+        setupObserve()
 
     }
     
@@ -35,6 +38,21 @@ class PreviewViewController: BaseCutViewController {
             make.center.equalToSuperview()
         }
     }
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        previewLayer?.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: view.frame.height)
+        
+    }
+    func setupObserve() {
+        self.viewModel.statePublisher?.sink { [weak self] state in
+            guard let self else {
+                return
+            }
+            if let url = state.url {
+                self.setupPlayer(url: url)
+            }
+        }.store(in: &cancellable)
+    }
 }
 
 extension PreviewViewController: PreviewViewControllerProtocol {
@@ -45,7 +63,7 @@ extension PreviewViewController: PreviewViewControllerProtocol {
         previewLayer?.videoGravity = .resizeAspect
         if let previewLayer {
             view.layer.addSublayer(previewLayer)
-            
+            previewLayer.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: view.frame.height)
         }
     }
 }

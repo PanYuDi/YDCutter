@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class VideoControlViewController: BaseCutViewController {
+class VideoControlViewController: BaseCutViewController<BaseCutViewModel> {
 
     override func viewDidLoad() {
         super.viewDidLoad()

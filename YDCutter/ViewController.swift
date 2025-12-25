@@ -11,10 +11,10 @@ import Photos
 
 class ViewController: UIViewController {
 
-    private let previewVC = PreviewViewController()
-    private let videoControlVC = VideoControlViewController()
-    private let timelineVC = TimelineViewController()
-    private let toolbarVC = ToolBarViewController()
+    private let previewVC: PreviewViewController
+    private let videoControlVC: VideoControlViewController
+    private let timelineVC: TimelineViewController
+    private let toolbarVC: ToolBarViewController
     private lazy var importBtn: UIButton = {
         let btn = UIButton(type: .system)
         btn.setTitle("Import", for: .normal)
@@ -25,16 +25,21 @@ class ViewController: UIViewController {
         btn.addTarget(self, action: #selector(importSegment), for: .touchUpInside)
         return btn
     }()
+    private var context: BaseCutContext
     
     required init?(coder: NSCoder) {
-        super.init(coder: coder)
         let context = BaseCutContext()
+        self.context = context
+        previewVC = PreviewViewController(context: context)
+        videoControlVC = VideoControlViewController(context: context)
+        timelineVC = TimelineViewController(context: context)
+        toolbarVC = ToolBarViewController(context: context)
         let initialVCs:[BaseCutViewController] = [previewVC, videoControlVC, timelineVC, toolbarVC]
         for vc in initialVCs {
             vc.context = context
         }
+        super.init(coder: coder)
         registerDI()
-        
     }
 
     override func viewDidLoad() {
@@ -142,12 +147,15 @@ extension ViewController : UIImagePickerControllerDelegate, UINavigationControll
             return
         }
         picker.dismiss(animated: true)
+        importAssets(url: videoURL)
     }
 }
 
 extension ViewController {
     func importAssets(url:URL) {
-        
+        var newState = self.context.currentState
+        newState.url = url
+        self.context.updateState(newState)
     }
 }
 

@@ -6,28 +6,15 @@
 //
 
 import UIKit
-public class BaseCutContext {
-    private var di: [String: Any] = [:]
 
-    public func register<T>(_ protocolType: T.Type, implementation: Any) {
-        let key = String(describing: protocolType)
-        di[key] = implementation
-    }
 
-    public func resolve<T>(_ protocolType: T.Type) -> T? {
-        let key = String(describing: protocolType)
-        return di[key] as? T
-    }
-}
-
-public class BaseCutViewController: UIViewController {
-    var context: BaseCutContext?
+public class BaseCutViewController<T: BaseCutViewModel>: UIViewController {
+    var context: BaseCutContext
+    var viewModel: T
     
-    init(context: BaseCutContext) {
+    required init(context: BaseCutContext) {
         self.context = context
-        super.init(nibName: nil, bundle: nil)
-    }
-    init() {
+        self.viewModel = T(context: context)
         super.init(nibName: nil, bundle: nil)
     }
     required init?(coder: NSCoder) {

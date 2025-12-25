@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class TimelineViewController: BaseCutViewController {
+class TimelineViewController: BaseCutViewController<BaseCutViewModel> {
 
     override func viewDidLoad() {
         super.viewDidLoad()
